@@ -8,4 +8,8 @@ $$
 
 Multi head splits this in $h$ parallel heads, concatenates outputs and projects them.
 
-relative attention modifies the score and computation by adding a relative term : 
+relative attention modifies the score and computation by adding a relative term :
+
+$$\text{scores}_{i,j} = \frac{Q_i \cdot K_j^T + Q_i \cdot R_{i-j}^T}{\sqrt{d_k}}$$
+
+Where $ R_{i-j} $ is a relative position embedding for the offset $ i-j $.
