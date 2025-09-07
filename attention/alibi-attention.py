@@ -140,20 +140,42 @@ def train_model():
     def generate_dummy_data(batch_size, seq_len, vocab_size):
         return torch.randint(0, vocab_size, (batch_size, seq_len)).to(device)
     
+    model.train()
+
+
+    for epoch in range(epochs):
+        total_loss = 0
+        for _ in range(100):
+            inputs = generate_dummy_data(batch_size, seq_len, vocab_size)
+            targets = inputs[:, 1:].contiguous()
+            mask = create_casual_mask(seq_len).to(device)
+
+            optimizer.zero_grad()
+            outputs = model(inputs, mask)[:, :-1, :].contiguous()
+            loss = criterion(outputs.view(-1, vocab_size), targets.view(-1))
+
+
+            loss.backward()
+            optimizer.step()
+
+            total_loss += loss.item()
+
+
+        print(f'Epoch {epoch + 1}, Loss : {total_loss / 100:.4f}')
+
+
     
+    model.eval()
+    test_seq_len = 1024
+    test_input = generate_dummy_data(1, test_seq_len, vocab_size)
+    test_mask = create_casual_mask(test_seq_len).to(device)
 
 
+    with torch.no_grad():
+        output = model(test_input, test_mask)
+
+    print(f'test output shape for seq_len {test_seq_len} : {output.shape}')
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+    if __name__ == '__main__':
+        train_model()
