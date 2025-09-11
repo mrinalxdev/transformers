@@ -55,11 +55,29 @@ class Matrix {
 
             Matrix result(cols_, rows_);
 
+            for (size_t i = 0; i < rows_; ++i) {
+                for (size_t j = 0; j < cols_; ++j){
+                    
 
+                    // here we will be mirroring the result 
+                    // with turned down numbers like the actual transpose would look like
+
+                    result(j, i) = data_[i][j];
+                }
+            }
 
             // thinking hard on the transpose part
             // its a little bit tricky for me T _ T 
             return result;
         }
 
+
+
+        void scale(double scalar){
+            for (size_t i = 0; i < rows_; ++i){
+                for (size_t j = 0; j < cols_; ++j){
+                    data_[i][j] *= scalar;
+                }
+            }
+        }
 };
