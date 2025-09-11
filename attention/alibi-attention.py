@@ -17,36 +17,29 @@ class ALiBiAttention(nn.Module):
         self.max_seq_len = max_seq_len
         self.register_buffer('alibi', self._build_alibi_bias(max_seq_len, num_heads))
 
-
     def _build_alibi_bias(self, max_seq_len, num_heads):
-        slopes = torch.logspace(-4, -0.3, steps=num_heads, base=2.0)
-
-        pos = torch.arrange(max_seq_len).unsqueeze(0).unsqueeze(-1)
-        bias = -pos * slopes.unsqueeze(-1)
-        return bias.view(1, num_heads, 1, max_seq_len)
-    
+        slopes = torch.logspace(-4, -0.3, steps=num_heads, base=2.0)  
+        pos = torch.arange(max_seq_len, dtype=torch.float32).unsqueeze(0)  
+        bias = pos.unsqueeze(1) * slopes.unsqueeze(0).unsqueeze(-1) 
+        bias = -bias.unsqueeze(2) 
+        return bias
 
     def forward(self, x, mask=None):
         B, L, _ = x.shape
-
         q = self.query(x).view(B, L, self.num_heads, self.head_dim).transpose(1, 2)
-        k = self.query(x).view(B, L, self.num_heads, self.head_dim).transpose(1, 2)
-        v = self.query(x).view(B, L, self.num_heads, self.head_dim).transpose(1, 2)
+        k = self.key(x).view(B, L, self.num_heads, self.head_dim).transpose(1, 2)
+        v = self.value(x).view(B, L, self.num_heads, self.head_dim).transpose(1, 2)
 
         scores = torch.matmul(q, k.transpose(-2, -1)) / self.scale
         alibi_bias = self.alibi[:, :, :, :L]
-
         scores = scores + alibi_bias
 
         if mask is not None:
             scores = scores.masked_fill(mask == 0, float('-inf'))
 
-
         attn = torch.softmax(scores, dim=-1)
         attn = self.dropout(attn)
         out = torch.matmul(attn, v).transpose(1, 2).contiguous().view(B, L, -1)
-
-
         return self.out(out)
     
 
@@ -177,5 +170,5 @@ def train_model():
     print(f'test output shape for seq_len {test_seq_len} : {output.shape}')
 
 
-    if __name__ == '__main__':
-        train_model()
+if __name__ == '__main__':
+    train_model()

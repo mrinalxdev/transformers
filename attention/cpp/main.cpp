@@ -30,6 +30,36 @@ class Matrix {
         double& operator()(size_t row, size_t col) { return data_[row][col]; }
         const double& operator()(size_t row, size_t col) const { return data_[row][col]; }
 
+        size_t rows() const { return rows_;}
+        size_t cols() const { return cols_;}
 
+
+        // performing matrix multiplication
+        Matrix matmul(const Matrix& other) const {
+            if (cols_ != other.rows_) throw std::invalid_argument("Matrix dimension mismatch");
+            Matrix result(rows_, other.cols_);
+            for (size_t i = 0; i < rows_; ++i){
+                for (size_t j = 0; j < other.cols_; ++j) {
+                    for (size_t k = 0; k < cols_; ++k) {
+                        result(i, j) += data_[i][k] * other(k, j);
+                    }
+                }
+            }
+
+            return result;
+        }
+
+
+        Matrix transpose() const {
+
+
+            Matrix result(cols_, rows_);
+
+
+
+            // thinking hard on the transpose part
+            // its a little bit tricky for me T _ T 
+            return result;
+        }
 
 };
